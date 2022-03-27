@@ -1,73 +1,90 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
-
-```bash
-$ npm install
+## API
+### GET
+```
+localhost:3000/contacts
 ```
 
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+### POST
+```
+localhost:3000/contacts
+// param
+name: string
+detail: string
+age: number
 ```
 
-## Test
+## 코드 이해
+참고 블로그 : https://velog.io/@apjammanbo/NestJS-DB%EC%97%B0%EA%B2%B0%ED%95%98%EA%B8%B0Postgresql-typeorm
 
-```bash
-# unit tests
-$ npm run test
+### nest 명령어
+#### nest generate, nest g
 
-# e2e tests
-$ npm run test:e2e
+schematic 참고 : https://docs.nestjs.com/cli/usages#nest-generate
+```
+nest generate <schematic> <name> [options]
+nest g <schematic> <name> [options]
+```
+위 명령어로 생성 시, app.module.ts에 자동으로 추가가 되는 듯 하다.
+ex.
+```
+nest g co contacts
+```
+- 위 코드를 터미널에 입력 시, contacts/contacts.controller.ts가 생성되고 app.module.ts에 자동으로 연결 됨.
+- schematicd을 바꿔가면서 서비스(s), 모듈(mo)등을 생성.
 
-# test coverage
-$ npm run test:cov
+### TypeOrm 
+- ORM(Object-relational mapping): 객체지향 프로그래밍과 관계형 DB 사이의 호환되지 않는 데이터를 변환하는 시스템
+- 객체지향 프로그래밍은 Class, 관계형DB는 Table 사용
+- typeorm에 연결하기 위해선 app.module.ts에서 typeorm module을 import 해야함.
+
+### contacts
+#### contacts.module.ts
+- contacts 모듈에 controller(컨트롤러)와 provider(서비스)로 종속성 추가
+
+### DB연결
+#### typeorm과 pg(postgres)를 설치
+```
+npm install @nestjs/typeorm typeorm pg
 ```
 
-## Support
+#### 프로젝트 루트에 ormconfig.json을 생성해서 DB설정 값 입력.
+```
+{
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "postgres",
+    "database": "TestDB",
+    "entities": ["dist/**/*.entity{.ts,.js}"],
+    "synchronize": true
+}
+```
+- entities 경로가 dist로 되어있는데 `npm run start:dev`를 하면 dist가 생성되지 않아서 `npm run start`를 사용함.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+#### app.module.ts에 DB연결 코드 추가
+```
+@Module({
+  controllers: [AppController],
+  providers: [AppService],
+  imports: [TypeOrmModule.forRoot(), ContactsModule],
+})
+export class AppModule {}
+```
+- imports에 `TypeOrmModule.forRoot()` 추가
 
-## Stay in touch
+### Entity 모델링
+#### contacts/entities/contact.entity.ts 생성
+- [contact.entity.ts](./src/contacts/entities/contact.entity.ts)
+- 실체, 객체라는 의미인데 위 파일 기준으로는 contact의 엔티티는 id, name, detail, age로 이루어져 있다? 라는 걸 알려주는 듯함.
+- 엔티티가 작성되었다면 모듈에서 import를 해야함.
+[contacts.module.ts](./src/contacts/contacts.module.ts)의 imports부분의 `TypeOrmModule.forFeature([Contact])`
+- Entity를 생성하고 모듈에 연결하면 Entity와 DB가 매핑되어 Entity를 생성, 수정, 삭제를 할 수 있음.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### contacts 서비스 구현
+- [contacts.service.ts](./src/contacts/contacts.service.ts)
+- 서비스 생성이 완료되었다면 컨트롤러도 수정이 필요함. [contacts.controller.ts](./src/contacts/contacts.controller.ts) (Get, Post, Put, Delete)
 
-## License
-
-Nest is [MIT licensed](LICENSE).
+### 확인
+서버를 키고(npm run start) Insomnia에서 확인이 가능하다.
+Postico에서는 DB를 확인할 수 있다.
